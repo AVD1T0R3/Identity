@@ -131,16 +131,21 @@ export function GameInterface({ username }: GameInterfaceProps) {
         }
 
         const inputCode = codeInput.trim().toUpperCase()
+        console.log("[v0] Searching for code:", inputCode)
 
-        const { data: codes, error: codeError } = await supabase.from("codes").select("id").eq("code", inputCode)
+        const { data: codes, error: codeError } = await supabase.from("codes").select("id, code").eq("code", inputCode)
+
+        console.log("[v0] Code lookup result:", { codes, error: codeError })
 
         if (codeError) {
+          console.log("[v0] Code lookup error:", codeError)
           setError("Database error")
           setLoading(false)
           return
         }
 
         if (!codes || codes.length === 0) {
+          console.log("[v0] No codes found matching:", inputCode)
           setError("Invalid code")
           setLoading(false)
           return
@@ -168,6 +173,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
         })
 
         if (insertError) {
+          console.log("[v0] Insert error:", insertError)
           setError("Failed to record code")
           setLoading(false)
           return
@@ -175,6 +181,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
 
         setCodeInput("")
       } catch (err) {
+        console.log("[v0] Unexpected error:", err)
         setError("An error occurred")
       } finally {
         setLoading(false)

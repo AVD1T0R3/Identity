@@ -15,6 +15,16 @@ export async function GET() {
       },
     })
 
+    const { error: deleteError } = await supabase
+      .from("codes")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000")
+
+    if (deleteError) {
+      console.error("[v0] Delete error:", deleteError)
+      return Response.json({ error: `Delete error: ${deleteError.message}` }, { status: 400 })
+    }
+
     // Insert 10 codes
     const { data, error } = await supabase
       .from("codes")
@@ -33,17 +43,28 @@ export async function GET() {
       .select()
 
     if (error) {
-      console.error("Seed error:", error)
-      return Response.json({ error: error.message }, { status: 400 })
+      console.error("[v0] Seed insert error:", error)
+      return Response.json(
+        {
+          success: false,
+          error: error.message,
+          details: error.details,
+        },
+        { status: 400 },
+      )
     }
+
+    const { data: verify, error: verifyError } = await supabase.from("codes").select("*")
 
     return Response.json({
       success: true,
       message: "Database seeded successfully",
-      codes: data,
+      insertedCodes: data,
+      totalCodesNow: verify?.length || 0,
+      allCodes: verify,
     })
   } catch (error) {
-    console.error("Seed error:", error)
-    return Response.json({ error: "Failed to seed database" }, { status: 500 })
+    console.error("[v0] Seed error:", error)
+    return Response.json({ error: "Failed to seed database", details: String(error) }, { status: 500 })
   }
 }
