@@ -1,0 +1,201 @@
+===============================================
+EASTER EGG HUNT APP - DOCUMENTATION
+===============================================
+
+OVERVIEW
+--------
+A real-time multiplayer Easter Egg Hunt tracker built with Next.js and Supabase.
+Participants compete to find all secret codes first, with live leaderboard updates
+and instant winner announcement.
+
+===============================================
+PARTICIPANT FEATURES
+===============================================
+
+1. USERNAME SETUP
+   - Enter a unique username to join the game
+   - Username is required to start playing
+   - Each username can only be used once per session
+
+2. CODE ENTRY
+   - Enter secret codes in the input field
+   - Real-time validation - codes are checked instantly
+   - Immediate feedback on whether code is correct
+   - Prevents duplicate code submissions from the same user
+
+3. REAL-TIME LEADERBOARD
+   - View all participants ranked by number of codes found
+   - Updates automatically when any player finds a code
+   - Shows current ranking position
+   - Live progress tracking
+
+4. WINNER ANNOUNCEMENT
+   - Modal alert displays when someone finds all 10 codes
+   - Shows the winner's name
+   - Visible to all connected players simultaneously
+
+===============================================
+ADMIN DASHBOARD
+===============================================
+
+ACCESS
+   - URL: /admin
+   - Example: localhost:3000/admin or yoursite.com/admin
+
+FEATURES
+
+1. MANAGE CODES
+   - View all 10 secret codes in a table
+   - Click any code to edit it inline
+   - Save changes instantly
+   - Changes reflect immediately in the live game
+
+2. USER PROGRESS TRACKING
+   - View all active participants
+   - See how many codes each user has found
+   - Visual progress bar for each participant
+   - Real-time updates as players find codes
+
+3. RESET GAME
+   - Button to reset all found codes
+   - Keeps all users in the system
+   - Useful for restarting with same participants
+   - Confirmation message before reset
+
+4. GAME STATISTICS
+   - Total participants
+   - Total codes found across all players
+   - Current leader information
+
+===============================================
+HOW TO USE
+===============================================
+
+SETUP
+   1. Deploy the app to Vercel or run locally
+   2. Run the SQL migration script (scripts/01-init-schema.sql)
+   3. Go to Admin Dashboard (/admin)
+   4. Customize the 10 secret codes (replace CODE1-CODE10 with actual codes)
+
+GAMEPLAY
+   1. Share the main URL with participants
+   2. Each participant enters a username
+   3. As they find codes during the hunt, they enter them in the app
+   4. Leaderboard updates in real-time
+   5. When first player finds all codes, winner modal displays
+
+ADMIN MANAGEMENT
+   1. Access /admin dashboard anytime
+   2. Edit codes as needed
+   3. Monitor player progress
+   4. Reset game between rounds if desired
+
+===============================================
+CUSTOMIZING SECRET CODES
+===============================================
+
+OPTION 1: BEFORE DEPLOYMENT (RECOMMENDED)
+   - Edit scripts/01-init-schema.sql
+   - Replace CODE1 through CODE10 with actual codes
+   - Deploy to Vercel
+   - Codes will be seeded automatically
+
+OPTION 2: AFTER DEPLOYMENT
+   - Go to Admin Dashboard (/admin)
+   - Click on any code to edit
+   - Type new code and save
+   - Changes are instant and live
+
+OPTION 3: SUPABASE DASHBOARD
+   - Log into Supabase project
+   - Navigate to Tables > codes
+   - Edit the 'code' column directly
+   - Changes sync immediately to live app
+
+===============================================
+DEPLOYMENT TO VERCEL
+===============================================
+
+1. Download the ZIP from v0
+2. Push to GitHub or use Vercel's Git integration
+3. Create new Vercel project
+4. Connect your Supabase database in Vercel settings
+5. Ensure environment variables are set:
+   - SUPABASE_URL
+   - NEXT_PUBLIC_SUPABASE_URL
+   - SUPABASE_ANON_KEY
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+6. Deploy
+7. Run SQL migration script in Supabase to create tables
+8. Access /admin to set your custom codes
+9. Share main URL with participants
+
+===============================================
+TECHNICAL DETAILS
+===============================================
+
+DATABASE STRUCTURE
+
+users table:
+   - id: UUID (primary key)
+   - username: TEXT (unique)
+   - created_at: TIMESTAMP
+
+codes table:
+   - id: INTEGER (1-10)
+   - code: TEXT (the secret code)
+
+user_codes table:
+   - id: UUID (primary key)
+   - user_id: UUID (references users)
+   - code_id: INTEGER (references codes)
+   - created_at: TIMESTAMP
+
+REAL-TIME FEATURES
+   - Uses Supabase real-time subscriptions
+   - Leaderboard updates automatically when codes are found
+   - Multiple players can be playing simultaneously
+   - All clients receive updates in milliseconds
+
+API ENDPOINTS
+   - Code validation: Built into Supabase queries
+   - Leaderboard fetching: Real-time subscription
+   - User creation: Direct database insertion
+   - Admin functions: Server-side operations
+
+===============================================
+TROUBLESHOOTING
+===============================================
+
+CODES NOT UPDATING IN ADMIN
+   - Refresh the admin page (F5)
+   - Check if you have correct edit permissions
+   - Verify Supabase connection is active
+
+LEADERBOARD NOT UPDATING
+   - Check internet connection
+   - Verify Supabase is running
+   - Try refreshing the main game page
+
+DUPLICATE USERNAMES
+   - Each username must be unique
+   - If needed, add a timestamp or number suffix
+
+GAME NOT RESETTING
+   - Use the Reset Game button in admin dashboard
+   - Or manually delete rows from user_codes table in Supabase
+
+===============================================
+SUPPORT & CUSTOMIZATION
+===============================================
+
+The app is built with:
+- Next.js 16 (React 19)
+- Supabase PostgreSQL Database
+- Tailwind CSS for styling
+- Real-time subscriptions for live updates
+
+For additional features or customization, refer to the code comments
+in the component files.
+
+===============================================
