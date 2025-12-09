@@ -16,11 +16,10 @@ interface LeaderboardProps {
 export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
-
   const supabase = createClient()
 
   const fetchLeaderboard = async () => {
-    setLoading(true)
+    console.log("[v0] Fetching leaderboard...")
     const { data, error } = await supabase.from("users").select("username, user_codes(id)")
 
     if (!error && data) {
@@ -31,6 +30,7 @@ export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
         }))
         .sort((a, b) => b.codes_found - a.codes_found)
 
+      console.log("[v0] Leaderboard entries:", entries)
       setLeaderboard(entries)
     }
     setLoading(false)
@@ -41,15 +41,20 @@ export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
 
     const channel = supabase
       .channel("leaderboard_updates")
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_codes" }, () => {
-        fetchLeaderboard()
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_codes" }, async () => {
+        console.log("[v0] New code found, updating leaderboard")
+        await fetchLeaderboard()
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "user_codes" }, async () => {
+        console.log("[v0] Code removed, updating leaderboard")
+        await fetchLeaderboard()
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, [])
 
   if (loading) {
     return <div className="text-center text-gray-500">Loading leaderboard...</div>

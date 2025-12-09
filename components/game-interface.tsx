@@ -41,10 +41,11 @@ export function GameInterface({ username }: GameInterfaceProps) {
 
   // Get user ID and fetch found codes on mount
   useEffect(() => {
+    // Only fetch initial found codes for this user
     const fetchUserAndCodes = async () => {
       const { data: users, error: userError } = await supabase.from("users").select("id").eq("username", username)
 
-      if (userError || !users || users.length === 0) {
+      if (userError || !users || !users.length) {
         console.error("User not found")
         return
       }
@@ -52,18 +53,8 @@ export function GameInterface({ username }: GameInterfaceProps) {
       const currentUserId = users[0].id
       setUserId(currentUserId)
 
-      // Now fetch codes for this specific user
-      const { data: userCodesData, error: codesError } = await supabase
-        .from("user_codes")
-        .select("code_id")
-        .eq("user_id", currentUserId)
+      const { data: userCodesData } = await supabase.from("user_codes").select("code_id").eq("user_id", currentUserId)
 
-      if (codesError) {
-        console.error("Error fetching codes:", codesError)
-        return
-      }
-
-      // Get the actual code values
       if (userCodesData && userCodesData.length > 0) {
         const codeIds = userCodesData.map((uc: any) => uc.code_id)
         const { data: codeDetails } = await supabase.from("codes").select("code").in("id", codeIds)
@@ -77,12 +68,13 @@ export function GameInterface({ username }: GameInterfaceProps) {
     fetchUserAndCodes()
   }, [username, supabase])
 
-  // Subscribe to real-time updates for leaderboard and winners
   useEffect(() => {
+    if (!userId) return
+
     const channel = supabase
-      .channel("user_codes_updates")
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_codes" }, async () => {
-        if (!userId) return
+      .channel(`user_codes_${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_codes" }, async (payload) => {
+        console.log("[v0] user_codes changed, refetching for user:", userId)
 
         const { data: userCodesData } = await supabase.from("user_codes").select("code_id").eq("user_id", userId)
 
@@ -96,27 +88,20 @@ export function GameInterface({ username }: GameInterfaceProps) {
         } else {
           setFoundCodes([])
         }
-
-        // Check if anyone has found all codes
-        if (totalCodes > 0) {
-          const { data: allUsers } = await supabase.from("users").select("username, user_codes(id)")
-
-          if (allUsers) {
-            for (const user of allUsers) {
-              if (user.user_codes && user.user_codes.length === totalCodes) {
-                setWinner(user.username)
-                break
-              }
-            }
-          }
-        }
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId, totalCodes, supabase])
+  }, [userId, supabase])
+
+  useEffect(() => {
+    if (totalCodes > 0 && foundCodes.length === totalCodes && foundCodes.length > 0) {
+      console.log("[v0] Winner found:", username)
+      setWinner(username)
+    }
+  }, [foundCodes, totalCodes, username])
 
   const handleCodeSubmit = useCallback(
     async (e: React.FormEvent) => {
