@@ -1,35 +1,35 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card } from "@/components/ui/card"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
 interface CodeEntry {
-  id: string;
-  code: string;
-  created_at: string;
+  id: string
+  code: string
+  created_at: string
 }
 
 interface UserProgress {
-  username: string;
-  codes_found: number;
-  total_codes: number;
+  username: string
+  codes_found: number
+  total_codes: number
 }
 
 export default function AdminDashboard() {
-  const [codes, setCodes] = useState<CodeEntry[]>([]);
-  const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [codes, setCodes] = useState<CodeEntry[]>([])
+  const [userProgress, setUserProgress] = useState<UserProgress[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  const supabase = createClient();
+  const supabase = createClient()
 
   const fetchData = async () => {
     try {
@@ -37,91 +37,77 @@ export default function AdminDashboard() {
       const { data: codesData, error: codesError } = await supabase
         .from("codes")
         .select("*")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
 
-      if (codesError) throw codesError;
-      setCodes(codesData || []);
+      if (codesError) throw codesError
+      setCodes(codesData || [])
 
       // Fetch user progress
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("username, user_codes(id)");
+      const { data: usersData, error: usersError } = await supabase.from("users").select("username, user_codes(id)")
 
-      if (usersError) throw usersError;
+      if (usersError) throw usersError
 
-      const totalCodesCount = codesData?.length || 0;
+      const totalCodesCount = codesData?.length || 0
       const progress = (usersData || []).map((user: any) => ({
         username: user.username,
         codes_found: user.user_codes?.length || 0,
         total_codes: totalCodesCount,
-      }));
+      }))
 
-      setUserProgress(progress.sort((a, b) => b.codes_found - a.codes_found));
+      setUserProgress(progress.sort((a, b) => b.codes_found - a.codes_found))
     } catch (err) {
-      setError("Failed to fetch data");
+      setError("Failed to fetch data")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const handleEditCode = async (id: string, newCode: string) => {
     if (!newCode.trim()) {
-      setError("Code cannot be empty");
-      return;
+      setError("Code cannot be empty")
+      return
     }
 
     try {
-      setError(null);
-      const { error: updateError } = await supabase
-        .from("codes")
-        .update({ code: newCode.toUpperCase() })
-        .eq("id", id);
+      setError(null)
+      const { error: updateError } = await supabase.from("codes").update({ code: newCode.toUpperCase() }).eq("id", id)
 
-      if (updateError) throw updateError;
+      if (updateError) throw updateError
 
-      setCodes(
-        codes.map((c) =>
-          c.id === id ? { ...c, code: newCode.toUpperCase() } : c
-        )
-      );
-      setEditingId(null);
-      setSuccess("Code updated successfully");
-      setTimeout(() => setSuccess(null), 2000);
+      setCodes(codes.map((c) => (c.id === id ? { ...c, code: newCode.toUpperCase() } : c)))
+      setEditingId(null)
+      setSuccess("Code updated successfully")
+      setTimeout(() => setSuccess(null), 2000)
     } catch (err) {
-      setError("Failed to update code");
+      setError("Failed to update code")
     }
-  };
+  }
 
   const handleResetGame = async () => {
     if (!confirm("Are you sure? This will delete all user codes found. Users will remain.")) {
-      return;
+      return
     }
 
     try {
-      setError(null);
+      setError(null)
       const { error: deleteError } = await supabase
         .from("user_codes")
         .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000");
+        .neq("id", "00000000-0000-0000-0000-000000000000")
 
-      if (deleteError) throw deleteError;
+      if (deleteError) throw deleteError
 
-      setUserProgress(
-        userProgress.map((u) => ({
-          ...u,
-          codes_found: 0,
-        }))
-      );
-      setSuccess("Game reset successfully");
-      setTimeout(() => setSuccess(null), 2000);
+      await fetchData()
+      setSuccess("Game reset successfully")
+      setTimeout(() => setSuccess(null), 2000)
     } catch (err) {
-      setError("Failed to reset game");
+      setError("Failed to reset game")
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -130,7 +116,7 @@ export default function AdminDashboard() {
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -151,15 +137,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Alerts */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">{error}</div>}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded text-green-700">
-            {success}
-          </div>
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded text-green-700">{success}</div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -181,31 +161,22 @@ export default function AdminDashboard() {
                         className="font-mono"
                         autoFocus
                       />
-                      <Button
-                        size="sm"
-                        onClick={() => handleEditCode(code.id, editValue)}
-                      >
+                      <Button size="sm" onClick={() => handleEditCode(code.id, editValue)}>
                         Save
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingId(null)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
                         Cancel
                       </Button>
                     </div>
                   ) : (
                     <>
-                      <code className="font-mono font-bold text-blue-600">
-                        {code.code}
-                      </code>
+                      <code className="font-mono font-bold text-blue-600">{code.code}</code>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setEditingId(code.id);
-                          setEditValue(code.code);
+                          setEditingId(code.id)
+                          setEditValue(code.code)
                         }}
                       >
                         Edit
@@ -217,16 +188,10 @@ export default function AdminDashboard() {
             </div>
 
             <div className="mt-6 pt-6 border-t">
-              <Button
-                onClick={handleResetGame}
-                variant="destructive"
-                className="w-full"
-              >
+              <Button onClick={handleResetGame} variant="destructive" className="w-full">
                 Reset Game Progress
               </Button>
-              <p className="text-xs text-gray-500 mt-2">
-                Clears all found codes while keeping users
-              </p>
+              <p className="text-xs text-gray-500 mt-2">Clears all found codes while keeping users</p>
             </div>
           </Card>
 
@@ -243,34 +208,22 @@ export default function AdminDashboard() {
                     className="flex items-center justify-between p-3 bg-blue-50 rounded border border-blue-200"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-500 w-6">
-                        #{index + 1}
-                      </span>
+                      <span className="text-lg font-bold text-gray-500 w-6">#{index + 1}</span>
                       <div>
-                        <p className="font-semibold text-gray-900">
-                          {user.username}
-                        </p>
+                        <p className="font-semibold text-gray-900">{user.username}</p>
                         <div className="w-32 bg-gray-200 rounded-full h-2">
                           <div
                             className="bg-blue-600 h-2 rounded-full transition-all"
                             style={{
-                              width: `${
-                                user.total_codes > 0
-                                  ? (user.codes_found / user.total_codes) * 100
-                                  : 0
-                              }%`,
+                              width: `${user.total_codes > 0 ? (user.codes_found / user.total_codes) * 100 : 0}%`,
                             }}
                           ></div>
                         </div>
                       </div>
                     </div>
                     <div className="text-right font-semibold">
-                      <span className="text-blue-600">
-                        {user.codes_found}
-                      </span>
-                      <span className="text-gray-500">
-                        /{user.total_codes}
-                      </span>
+                      <span className="text-blue-600">{user.codes_found}</span>
+                      <span className="text-gray-500">/{user.total_codes}</span>
                     </div>
                   </div>
                 ))
@@ -280,5 +233,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  );
+  )
 }

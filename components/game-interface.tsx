@@ -22,6 +22,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
   const [winner, setWinner] = useState<string | null>(null)
   const [totalCodes, setTotalCodes] = useState(0)
   const [userId, setUserId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const supabase = createClient()
 
@@ -133,7 +134,10 @@ export function GameInterface({ username }: GameInterfaceProps) {
         const inputCode = codeInput.trim().toUpperCase()
         console.log("[v0] Searching for code:", inputCode)
 
-        const { data: codes, error: codeError } = await supabase.from("codes").select("id, code").eq("code", inputCode)
+        const { data: codes, error: codeError } = await supabase
+          .from("codes")
+          .select("id, code")
+          .ilike("code", inputCode)
 
         console.log("[v0] Code lookup result:", { codes, error: codeError })
 
@@ -187,8 +191,30 @@ export function GameInterface({ username }: GameInterfaceProps) {
         setLoading(false)
       }
     },
-    [userId, supabase],
+    [userId, codeInput, supabase],
   )
+
+  const handleRefresh = async () => {
+    if (!userId) return
+
+    setRefreshing(true)
+    try {
+      const { data: userCodesData } = await supabase.from("user_codes").select("code_id").eq("user_id", userId)
+
+      if (userCodesData && userCodesData.length > 0) {
+        const codeIds = userCodesData.map((uc: any) => uc.code_id)
+        const { data: codeDetails } = await supabase.from("codes").select("code").in("id", codeIds)
+
+        if (codeDetails) {
+          setFoundCodes(codeDetails.map((c: any) => c.code))
+        }
+      } else {
+        setFoundCodes([])
+      }
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -239,6 +265,12 @@ export function GameInterface({ username }: GameInterfaceProps) {
 
           {/* Leaderboard Section */}
           <Card className="lg:col-span-2 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Leaderboard</h2>
+              <Button size="sm" variant="outline" onClick={handleRefresh} disabled={refreshing}>
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </Button>
+            </div>
             <Leaderboard totalCodes={totalCodes} currentUsername={username} />
           </Card>
         </div>
