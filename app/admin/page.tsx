@@ -64,7 +64,26 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+
+    const codesChannel = supabase
+      .channel("admin_codes_updates")
+      .on("postgres_changes", { event: "*", schema: "public", table: "codes" }, () => {
+        fetchData()
+      })
+      .subscribe()
+
+    const userCodesChannel = supabase
+      .channel("admin_usercodes_updates")
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_codes" }, () => {
+        fetchData()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(codesChannel)
+      supabase.removeChannel(userCodesChannel)
+    }
+  }, [supabase])
 
   const handleEditCode = async (id: string, newCode: string) => {
     if (!newCode.trim()) {
@@ -78,7 +97,6 @@ export default function AdminDashboard() {
 
       if (updateError) throw updateError
 
-      setCodes(codes.map((c) => (c.id === id ? { ...c, code: newCode.toUpperCase() } : c)))
       setEditingId(null)
       setSuccess("Code updated successfully")
       setTimeout(() => setSuccess(null), 2000)
@@ -101,7 +119,6 @@ export default function AdminDashboard() {
 
       if (deleteError) throw deleteError
 
-      await fetchData()
       setSuccess("Game reset successfully")
       setTimeout(() => setSuccess(null), 2000)
     } catch (err) {
