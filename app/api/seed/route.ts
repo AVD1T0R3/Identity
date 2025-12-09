@@ -29,10 +29,10 @@ export async function GET() {
     const { data, error } = await supabase
       .from("codes")
       .insert([
-        { code: "CODE1" },
-        { code: "CODE2" },
-        { code: "CODE3" },
-        { code: "CODE4" },
+        { code: "BLACK" },
+        { code: "NEW" },
+        { code: "OPEN" },
+        { code: "YELOOW" },
         { code: "CODE5" },
         { code: "CODE6" },
         { code: "CODE7" },
