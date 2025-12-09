@@ -39,10 +39,10 @@ CREATE POLICY "Allow public insert user_codes" ON user_codes FOR INSERT WITH CHE
 
 -- Insert 10 placeholder codes (user can edit these later)
 INSERT INTO codes (code) VALUES
-  ('BLACK'),
-  ('NEW'),
-  ('OPEN'),
-  ('YELOOW'),
+  ('CODE1'),
+  ('CODE2'),
+  ('CODE3'),
+  ('CODE4'),
   ('CODE5'),
   ('CODE6'),
   ('CODE7'),
