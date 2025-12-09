@@ -93,7 +93,7 @@ export default function AdminDashboard() {
 
     try {
       setError(null)
-      const { error: updateError } = await supabase.from("codes").update({ code: newCode.toUpperCase() }).eq("id", id)
+      const { error: updateError } = await supabase.from("codes").update({ code: newCode.toLowerCase() }).eq("id", id)
 
       if (updateError) throw updateError
 
@@ -123,6 +123,41 @@ export default function AdminDashboard() {
       setTimeout(() => setSuccess(null), 2000)
     } catch (err) {
       setError("Failed to reset game")
+    }
+  }
+
+  const handleResetEverything = async () => {
+    if (!confirm("⚠️ WARNING: This will delete ALL users and all codes found. Are you absolutely sure?")) {
+      return
+    }
+
+    if (!confirm("This action cannot be undone. Click OK again to confirm.")) {
+      return
+    }
+
+    try {
+      setError(null)
+      // Delete all user_codes first (foreign key constraint)
+      const { error: deleteCodesError } = await supabase
+        .from("user_codes")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000")
+
+      if (deleteCodesError) throw deleteCodesError
+
+      // Then delete all users
+      const { error: deleteUsersError } = await supabase
+        .from("users")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000")
+
+      if (deleteUsersError) throw deleteUsersError
+
+      setSuccess("All users and progress reset successfully")
+      setTimeout(() => setSuccess(null), 2000)
+      await fetchData()
+    } catch (err) {
+      setError("Failed to reset everything")
     }
   }
 
@@ -174,7 +209,7 @@ export default function AdminDashboard() {
                       <Input
                         type="text"
                         value={editValue}
-                        onChange={(e) => setEditValue(e.target.value.toUpperCase())}
+                        onChange={(e) => setEditValue(e.target.value.toLowerCase())}
                         className="font-mono"
                         autoFocus
                       />
@@ -204,11 +239,20 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            <div className="mt-6 pt-6 border-t">
+            <div className="mt-6 pt-6 border-t space-y-3">
               <Button onClick={handleResetGame} variant="destructive" className="w-full">
                 Reset Game Progress
               </Button>
-              <p className="text-xs text-gray-500 mt-2">Clears all found codes while keeping users</p>
+              <p className="text-xs text-gray-500">Clears all found codes while keeping users</p>
+
+              <Button
+                onClick={handleResetEverything}
+                variant="destructive"
+                className="w-full bg-red-700 hover:bg-red-800"
+              >
+                Reset All Users (Keep Codes)
+              </Button>
+              <p className="text-xs text-gray-500">Deletes all users and their progress, keeps secret codes</p>
             </div>
           </Card>
 

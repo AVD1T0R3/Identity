@@ -41,20 +41,22 @@ export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
 
     const channel = supabase
       .channel("leaderboard_updates")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_codes" }, async () => {
-        console.log("[v0] New code found, updating leaderboard")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_codes" }, async (payload) => {
+        console.log("[v0] INSERT user_codes, updating leaderboard:", payload)
         await fetchLeaderboard()
       })
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "user_codes" }, async () => {
-        console.log("[v0] Code removed, updating leaderboard")
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "user_codes" }, async (payload) => {
+        console.log("[v0] DELETE user_codes, updating leaderboard:", payload)
         await fetchLeaderboard()
       })
-      .subscribe()
+      .subscribe((status) => {
+        console.log("[v0] Leaderboard subscription status:", status)
+      })
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [supabase])
 
   if (loading) {
     return <div className="text-center text-gray-500">Loading leaderboard...</div>

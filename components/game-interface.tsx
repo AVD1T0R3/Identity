@@ -60,7 +60,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
         const { data: codeDetails } = await supabase.from("codes").select("code").in("id", codeIds)
 
         if (codeDetails) {
-          setFoundCodes(codeDetails.map((c: any) => c.code))
+          setFoundCodes(codeDetails.map((c: any) => c.code.toLowerCase()))
         }
       }
     }
@@ -83,7 +83,9 @@ export function GameInterface({ username }: GameInterfaceProps) {
           const { data: codeDetails } = await supabase.from("codes").select("code").in("id", codeIds)
 
           if (codeDetails) {
-            setFoundCodes(codeDetails.map((c: any) => c.code))
+            const newFoundCodes = codeDetails.map((c: any) => c.code.toLowerCase())
+            setFoundCodes(newFoundCodes)
+            console.log("[v0] Updated found codes:", newFoundCodes)
           }
         } else {
           setFoundCodes([])
@@ -98,7 +100,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
 
   useEffect(() => {
     if (totalCodes > 0 && foundCodes.length === totalCodes && foundCodes.length > 0) {
-      console.log("[v0] Winner found:", username)
+      console.log("[v0] Winner found:", username, "with", foundCodes.length, "codes")
       setWinner(username)
     }
   }, [foundCodes, totalCodes, username])
@@ -116,13 +118,10 @@ export function GameInterface({ username }: GameInterfaceProps) {
           return
         }
 
-        const inputCode = codeInput.trim().toUpperCase()
+        const inputCode = codeInput.trim().toLowerCase()
         console.log("[v0] Searching for code:", inputCode)
 
-        const { data: codes, error: codeError } = await supabase
-          .from("codes")
-          .select("id, code")
-          .ilike("code", inputCode)
+        const { data: codes, error: codeError } = await supabase.from("codes").select("id, code").eq("code", inputCode)
 
         console.log("[v0] Code lookup result:", { codes, error: codeError })
 
@@ -191,7 +190,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
         const { data: codeDetails } = await supabase.from("codes").select("code").in("id", codeIds)
 
         if (codeDetails) {
-          setFoundCodes(codeDetails.map((c: any) => c.code))
+          setFoundCodes(codeDetails.map((c: any) => c.code.toLowerCase()))
         }
       } else {
         setFoundCodes([])
@@ -218,7 +217,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
                 type="text"
                 placeholder="Enter code..."
                 value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                onChange={(e) => setCodeInput(e.target.value.toLowerCase())}
                 disabled={loading}
                 className="text-lg font-mono"
               />
