@@ -64,7 +64,7 @@ export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Leaderboard</h2>
+      <h2 className="text-2xl font-bold mb-4">Your Ranking</h2>
       <div className="space-y-2">
         {leaderboard.length === 0 ? (
           <p className="text-gray-500">No participants yet</p>

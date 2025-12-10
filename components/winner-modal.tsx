@@ -13,10 +13,10 @@ export function WinnerModal({ winner, onClose }: WinnerModalProps) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-md p-8 text-center">
         <div className="mb-4 text-5xl">🎉</div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        <h2 className="text-3xl font-bold text-[#ff0000] mb-2">
           We Have a Winner, folks!!!
         </h2>
-        <p className="text-2xl font-semibold text-blue-600 mb-6">{winner}</p>
+        <p className="text-2xl font-semibold text-[#0dff00] mb-6">{winner}</p>
         <p className="text-gray-600 mb-6">
           has found all the secret codes!
         </p>

@@ -76,7 +76,7 @@ export function UsernameSetup({ onUsernameSet }: UsernameSetupProps) {
             disabled={loading || input.length === 0}
             className="w-full text-lg"
           >
-            {loading ? "Getting things ready..." : "Let's Hunt!!"}
+            {loading ? "Getting things ready..." : "Let's Hunt!"}
           </Button>
         </form>
       </Card>

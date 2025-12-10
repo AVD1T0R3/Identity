@@ -216,18 +216,18 @@ export function GameInterface({ username }: GameInterfaceProps) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Easter Egg Hunt</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">The Quest for Identity</h1>
           <p className="text-gray-600">Welcome, {username}!</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Code Input Section */}
           <Card className="lg:col-span-1 p-6">
-            <h2 className="text-xl font-bold mb-4">Enter Code</h2>
+            <h2 className="text-xl font-bold mb-4">Enter the Code Word</h2>
             <form onSubmit={handleCodeSubmit} className="space-y-4">
               <Input
                 type="text"
-                placeholder="Enter code..."
+                placeholder="Enter codeword..."
                 value={codeInput}
                 onChange={(e) => setCodeInput(e.target.value.toLowerCase())}
                 disabled={loading}
@@ -237,17 +237,17 @@ export function GameInterface({ username }: GameInterfaceProps) {
               {error && <p className="text-red-600 text-sm">{error}</p>}
 
               <div className="bg-blue-50 p-3 rounded text-sm text-gray-700">
-                Found: {foundCodes.length} / {totalCodes} codes
+                Found: {foundCodes.length} / {totalCodes} codewords
               </div>
 
               <Button type="submit" disabled={loading || codeInput.length === 0} className="w-full">
-                {loading ? "Checking..." : "Submit Code"}
+                {loading ? "Verifying..." : "Enter codeword"}
               </Button>
             </form>
 
             {foundCodes.length > 0 && (
               <div className="mt-6 p-4 bg-green-50 rounded">
-                <h3 className="font-semibold text-green-900 mb-2">Your Codes:</h3>
+                <h3 className="font-semibold text-green-900 mb-2">You have found these codewords:</h3>
                 <div className="space-y-1">
                   {foundCodes.map((code) => (
                     <div key={code} className="text-sm text-green-700">
@@ -262,7 +262,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
           {/* Leaderboard Section */}
           <Card className="lg:col-span-2 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Leaderboard</h2>
+              <h2 className="text-xl font-bold">Your Ranking</h2>
               <Button size="sm" variant="outline" onClick={handleRefresh} disabled={refreshing}>
                 {refreshing ? "Refreshing..." : "Refresh"}
               </Button>
