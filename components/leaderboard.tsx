@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 interface LeaderboardEntry {
@@ -16,7 +16,7 @@ interface LeaderboardProps {
 export function Leaderboard({ totalCodes, currentUsername }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const fetchLeaderboard = async () => {
     console.log("[v0] Fetching leaderboard...")

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const fetchData = async () => {
     try {
@@ -100,6 +100,7 @@ export default function AdminDashboard() {
       setEditingId(null)
       setSuccess("Code updated successfully")
       setTimeout(() => setSuccess(null), 2000)
+      await fetchData()
     } catch (err) {
       setError("Failed to update code")
     }
@@ -121,6 +122,7 @@ export default function AdminDashboard() {
 
       setSuccess("Game reset successfully")
       setTimeout(() => setSuccess(null), 2000)
+      await fetchData()
     } catch (err) {
       setError("Failed to reset game")
     }

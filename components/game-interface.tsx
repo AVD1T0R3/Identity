@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,7 +24,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   // Fetch total codes count on mount
   useEffect(() => {
@@ -41,7 +41,6 @@ export function GameInterface({ username }: GameInterfaceProps) {
 
   // Get user ID and fetch found codes on mount
   useEffect(() => {
-    // Only fetch initial found codes for this user
     const fetchUserAndCodes = async () => {
       const { data: users, error: userError } = await supabase.from("users").select("id").eq("username", username)
 
@@ -71,7 +70,7 @@ export function GameInterface({ username }: GameInterfaceProps) {
   useEffect(() => {
     if (!userId) return
 
-    const channel = supabase
+    const userChannel = supabase
       .channel(`user_codes_${userId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "user_codes" }, async (payload) => {
         console.log("[v0] user_codes changed, refetching for user:", userId)
@@ -93,17 +92,30 @@ export function GameInterface({ username }: GameInterfaceProps) {
       })
       .subscribe()
 
+    const winnerChannel = supabase
+      .channel("game_events")
+      .on("broadcast", { event: "winner" }, (payload) => {
+        console.log("[v0] Winner announced:", payload.payload.winner)
+        setWinner(payload.payload.winner)
+      })
+      .subscribe()
+
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(userChannel)
+      supabase.removeChannel(winnerChannel)
     }
   }, [userId, supabase])
 
   useEffect(() => {
     if (totalCodes > 0 && foundCodes.length === totalCodes && foundCodes.length > 0) {
       console.log("[v0] Winner found:", username, "with", foundCodes.length, "codes")
-      setWinner(username)
+      // Broadcast to all connected clients
+      supabase.channel("game_events").send("broadcast", {
+        event: "winner",
+        payload: { winner: username },
+      })
     }
-  }, [foundCodes, totalCodes, username])
+  }, [foundCodes, totalCodes, username, supabase])
 
   const handleCodeSubmit = useCallback(
     async (e: React.FormEvent) => {
