@@ -52,9 +52,9 @@ export function UsernameSetup({ onUsernameSet }: UsernameSetupProps) {
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Easter Egg Hunt
+            The quest for Identity
           </h1>
-          <p className="text-gray-600">Enter your username to begin</p>
+          <p className="text-gray-600"><i>Enter your username to begin</i></p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
