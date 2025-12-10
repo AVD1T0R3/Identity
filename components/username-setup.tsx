@@ -52,7 +52,7 @@ export function UsernameSetup({ onUsernameSet }: UsernameSetupProps) {
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            The quest for Identity
+            The Quest for Identity
           </h1>
           <p className="text-gray-600"><i>Enter your username to begin</i></p>
         </div>
@@ -76,7 +76,7 @@ export function UsernameSetup({ onUsernameSet }: UsernameSetupProps) {
             disabled={loading || input.length === 0}
             className="w-full text-lg"
           >
-            {loading ? "Creating..." : "Start Game"}
+            {loading ? "Getting things ready..." : "Let's Hunt!!"}
           </Button>
         </form>
       </Card>

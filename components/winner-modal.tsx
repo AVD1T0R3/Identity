@@ -14,7 +14,7 @@ export function WinnerModal({ winner, onClose }: WinnerModalProps) {
       <Card className="w-full max-w-md p-8 text-center">
         <div className="mb-4 text-5xl">🎉</div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          We Have a Winner!
+          We Have a Winner, folks!!!
         </h2>
         <p className="text-2xl font-semibold text-blue-600 mb-6">{winner}</p>
         <p className="text-gray-600 mb-6">
