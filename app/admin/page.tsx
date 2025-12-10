@@ -93,9 +93,14 @@ export default function AdminDashboard() {
 
     try {
       setError(null)
-      const { error: updateError } = await supabase.from("codes").update({ code: newCode.toLowerCase() }).eq("id", id)
+      const res = await fetch("/api/admin/update-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, code: newCode }),
+      })
 
-      if (updateError) throw updateError
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
 
       setEditingId(null)
       setSuccess("Code updated successfully")
@@ -103,6 +108,7 @@ export default function AdminDashboard() {
       await fetchData()
     } catch (err) {
       setError("Failed to update code")
+      console.error("[v0] Edit error:", err)
     }
   }
 
@@ -113,18 +119,16 @@ export default function AdminDashboard() {
 
     try {
       setError(null)
-      const { error: deleteError } = await supabase
-        .from("user_codes")
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000")
-
-      if (deleteError) throw deleteError
+      const res = await fetch("/api/admin/reset-game", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
 
       setSuccess("Game reset successfully")
       setTimeout(() => setSuccess(null), 2000)
       await fetchData()
     } catch (err) {
       setError("Failed to reset game")
+      console.error("[v0] Reset error:", err)
     }
   }
 
@@ -139,27 +143,16 @@ export default function AdminDashboard() {
 
     try {
       setError(null)
-      // Delete all user_codes first (foreign key constraint)
-      const { error: deleteCodesError } = await supabase
-        .from("user_codes")
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000")
-
-      if (deleteCodesError) throw deleteCodesError
-
-      // Then delete all users
-      const { error: deleteUsersError } = await supabase
-        .from("users")
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000")
-
-      if (deleteUsersError) throw deleteUsersError
+      const res = await fetch("/api/admin/reset-all", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
 
       setSuccess("All users and progress reset successfully")
       setTimeout(() => setSuccess(null), 2000)
       await fetchData()
     } catch (err) {
       setError("Failed to reset everything")
+      console.error("[v0] Reset all error:", err)
     }
   }
 
